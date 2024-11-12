@@ -8,15 +8,25 @@ from datetime import datetime
 
 def on_message(ws, message):
     """Called when a new message arrives from the websocket"""
-    # Convert the JSON string to a Python dictionary
-    data = json.loads(message)
-    
-    # Extract relevant information
-    price = float(data['p'])  # Price
-    quantity = float(data['q'])  # Quantity
-    timestamp = datetime.fromtimestamp(data['T'] / 1000)  # Convert milliseconds to datetime
-    
-    print(f"Time: {timestamp}, ETH Price: ${price:,.2f}, Quantity: {quantity:.4f}")
+    try:
+        data = json.loads(message)
+        
+        # Extract relevant information
+        price = float(data['p'])  # Price
+        quantity = float(data['q'])  # Quantity
+        timestamp = datetime.fromtimestamp(data['T'] / 1000)  # Convert milliseconds to datetime
+        
+        # Determine which symbol we're processing
+        symbol = data['s'].upper()  # ETHUSDT or SOLUSDT
+        base_currency = symbol.replace('USDT', '')  # ETH or SOL
+        
+        print(f"Time: {timestamp}, {base_currency} Price: ${price:,.2f}, Quantity: {quantity:.4f}")
+    except json.JSONDecodeError as e:
+        print(f"JSON Decode Error: {e}")
+        print(f"Raw message: {message}")
+    except Exception as e:
+        print(f"Processing Error: {e}")
+        print(f"Raw message: {message}")
 
 def on_error(ws, error):
     """Called when a websocket error occurs"""
@@ -30,15 +40,16 @@ def on_open(ws):
     """Called when the websocket connection opens"""
     print("WebSocket Connection Opened")
     
-    # Subscribe to the ETH-USDT stream
-    subscribe_message = {
+    # Subscribe to both ETH-USDT and SOL-USDT streams
+    subscription_message = {
         "method": "SUBSCRIBE",
         "params": [
-            "ethusdt@trade"  # Stream name for ETH/USDT trades
+            "ethusdt@trade",
+            "solusdt@trade"
         ],
         "id": 1
     }
-    ws.send(json.dumps(subscribe_message))
+    ws.send(json.dumps(subscription_message))
 
 def main():
     # Use Binance.US WebSocket URL instead
