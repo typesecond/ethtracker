@@ -40,10 +40,11 @@ def on_open(ws):
     """Called when the websocket connection opens"""
     print("WebSocket Connection Opened")
     
-    # Subscribe to both ETH-USDT and SOL-USDT streams
+    # Subscribe to BTC-USDT, ETH-USDT and SOL-USDT streams
     subscription_message = {
         "method": "SUBSCRIBE",
         "params": [
+            "btcusdt@trade",
             "ethusdt@trade",
             "solusdt@trade"
         ],
